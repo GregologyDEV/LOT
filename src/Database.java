@@ -288,6 +288,10 @@ public class Database {
         }
     }
 
+    public static void removePassengerFromFlight(Passenger passenger, Flight flight) {
+
+    }
+
     public void close() {
         if (this.connection != null) {
             try {

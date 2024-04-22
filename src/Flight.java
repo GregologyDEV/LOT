@@ -3,7 +3,9 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -16,7 +18,7 @@ public class Flight {
     private Timestamp estimatedArrivalTime;
     private int availableSeats;
     private int dbID;
-    private List<Passenger> passengers = new ArrayList<>();
+    private Map<Passenger, Integer> passengersAndSeats = new HashMap<>();
     private List<Integer> availableSeatsNumbers;
 
     /**
@@ -99,20 +101,29 @@ public class Flight {
             System.out.println("No seats available, can't assign new passenger");
             return -1;
         }
-        if (!this.availableSeatsNumbers.contains(seatNo)) {
+        if (seatNo < 0 || seatNo > this.availableSeats) {
+            System.out.println("Incorrect seat number");
+            return -1;
+        }
+        if (this.passengersAndSeats.containsValue(seatNo)) {
             System.out.println("Selected seat is unavailable");
             return -1;
         }
-        if (!this.passengers.contains(passenger)) {
-            this.passengers.add(passenger);
+        if (!this.passengersAndSeats.containsKey(passenger)) {
+            this.passengersAndSeats.put(passenger, seatNo);
             this.availableSeats--; // TODO Test availableSeats
-            this.availableSeatsNumbers.remove(seatNo);
-            System.out.println("Passenger " + passenger.getName() + " " + passenger.getSurname() + " assigned to flight " + this.flightNumber);
+            this.availableSeatsNumbers.remove(seatNo); // No longer needed?
+            System.out.println("Passenger " + passenger.getFullName() + " assigned to flight " + this.flightNumber);
             return Database.addPassengerToFlight(passenger, this, seatNo);
         } else {
-            System.out.println("Passenger " + passenger.getName() + " " + passenger.getSurname() + " already assigned to flight");
+            System.out.println("Passenger " + passenger.getFullName() + " already assigned to flight");
             return -1;
         }
+    }
+
+    public void removePassenger(Passenger passenger) {
+        if (!this.passengersAndSeats.containsKey(passenger)) System.out.println("Passenger " + passenger.getFullName() + " is not assigned to flight");
+
     }
 
     public String getOriginAirport() {
