@@ -46,7 +46,7 @@ public class Database {
     }
 
     public static Flight getFlight(String flightNumber) {
-        if (Flight.isFlightNumberCorrect(flightNumber.toUpperCase())) throw new IllegalArgumentException("Flight number is incorrect");
+        if (!Flight.isFlightNumberCorrect(flightNumber.toUpperCase())) throw new IllegalArgumentException("Flight number is incorrect");
         String sql = "SELECT * FROM flights WHERE flight_number = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, flightNumber);
@@ -107,6 +107,23 @@ public class Database {
         return null;
     }
 
+    public static void deletePassengerFromDatabase(int id) {
+        String sql = "DELETE FROM passengers WHERE id = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, id);
+
+            int rowsAffected = preparedStatement.executeUpdate();
+
+            if (rowsAffected > 0) {
+                System.out.println("Passenger with id: " + id + " deleted successfully");
+            } else {
+                System.out.println("No passenger with id: " + id + " found in database");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      *
      * @param flight Flight object
@@ -151,6 +168,44 @@ public class Database {
         }
     }
 
+    public static void updateFlight(Flight flight) {
+        String sqlQuery = "UPDATE flights SET origin_airport = ?, destination_airport = ?, departure_time = ?, estimated_arrival_time = ?, available_seats = ? WHERE id = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery)) {
+            preparedStatement.setString(1, flight.getOriginAirport());
+            preparedStatement.setString(2, flight.getDestinationAirport());
+            preparedStatement.setTimestamp(3, flight.getDepartureTime());
+            preparedStatement.setTimestamp(4, flight.getEstimatedArrivalTime());
+            preparedStatement.setInt(5, flight.getAvailableSeats());
+            preparedStatement.setInt(6, flight.getDbID());
+
+            int rowsAffected = preparedStatement.executeUpdate();
+
+            if (rowsAffected > 0) {
+                System.out.println("Updated flight " + flight.getFlightNumber() + " info");
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void updatePassenger(Passenger passenger) {
+        String sqlQuery = "UPDATE passengers SET phone_number = ? WHERE id = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery)) {
+            preparedStatement.setString(1, passenger.getPhoneNumber());
+            preparedStatement.setInt(2, passenger.getDbID());
+
+            int rowsAffected = preparedStatement.executeUpdate();
+
+            if (rowsAffected > 0) {
+                System.out.println("Updated passenger " + passenger.getFullName() + " info");
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static int addPassengerToDatabase(Passenger passenger) {
         String sqlQuery = "INSERT INTO passengers (name, surname, phone_number) VALUES (?, ?, ?)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery)) {
@@ -170,7 +225,7 @@ public class Database {
         }
     }
 
-    public static List<Flight> getAllFlights() {
+    public static List<Flight> getAllFlights() { //TODO Change to use getFlight() ?
         List<Flight> flights = new ArrayList<>();
         String sql = "SELECT * FROM flights";
         try (PreparedStatement statement = connection.prepareStatement(sql);
@@ -191,6 +246,26 @@ public class Database {
             e.printStackTrace();
         }
         return flights;
+    }
+
+    public static List<Passenger> getAllPassengers() {
+        List<Passenger> passengers = new ArrayList<>();
+        String sql = "SELECT * FROM passengers";
+        try (PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+            while (resultSet.next()) {
+                Passenger passenger = new Passenger(
+                        resultSet.getInt("id"),
+                        resultSet.getString("name"),
+                        resultSet.getString("surname"),
+                        resultSet.getString("phone_number")
+                );
+                passengers.add(passenger);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return passengers;
     }
 
     public static int addPassengerToFlight(Passenger passenger, Flight flight, int seatNo) {

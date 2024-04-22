@@ -68,21 +68,12 @@ public class Flight {
         return this.flightNumber;
     }
 
-    public void setDepartureTime(Timestamp departureTime) {
-        this.departureTime = departureTime;
-    }
-
     public int getAvailableSeats() {
         return availableSeats;
     }
 
     public String getFlightPath() {
         return this.originAirport + "-" + this.destinationAirport;
-    }
-
-    public void setFlightNumber(String flightNumber) {
-        if (isFlightNumberCorrect(flightNumber.toUpperCase())) throw new IllegalArgumentException("Flight number is incorrect");
-        this.flightNumber = flightNumber;
     }
 
 
@@ -114,7 +105,7 @@ public class Flight {
         }
         if (!this.passengers.contains(passenger)) {
             this.passengers.add(passenger);
-            this.availableSeats--;
+            this.availableSeats--; // TODO Test availableSeats
             this.availableSeatsNumbers.remove(seatNo);
             System.out.println("Passenger " + passenger.getName() + " " + passenger.getSurname() + " assigned to flight " + this.flightNumber);
             return Database.addPassengerToFlight(passenger, this, seatNo);
@@ -150,5 +141,30 @@ public class Flight {
 
     public void delete() {
         Database.deleteFlightFromDatabase(this.flightNumber);
+    }
+
+    public void setOriginAirport(String originAirport) {
+        this.originAirport = originAirport;
+        Database.updateFlight(this);
+    }
+
+    public void setDestinationAirport(String destinationAirport) {
+        this.destinationAirport = destinationAirport;
+        Database.updateFlight(this);
+    }
+
+    public void setDepartureTime(Timestamp departureTime) {
+        this.departureTime = departureTime;
+        Database.updateFlight(this);
+    }
+
+    public void setEstimatedArrivalTime(Timestamp estimatedArrivalTime) {
+        this.estimatedArrivalTime = estimatedArrivalTime;
+        Database.updateFlight(this);
+    }
+
+    public void setAvailableSeats(int availableSeats) {
+        this.availableSeats = availableSeats;
+        Database.updateFlight(this);
     }
 }

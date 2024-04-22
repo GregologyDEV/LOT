@@ -37,6 +37,8 @@ public class Passenger {
         return surname;
     }
 
+    public String getFullName() { return name + " " + surname; }
+
     public String getPhoneNumber() {
         return phoneNumber;
     }
@@ -52,10 +54,15 @@ public class Passenger {
     public void setPhoneNumber(String phoneNumber) throws IllegalArgumentException {
         if (isPhoneNumberCorrect(phoneNumber)) {
             this.phoneNumber = phoneNumber;
+            Database.updatePassenger(this);
         } else throw new IllegalArgumentException("Incorrect phone number");
     }
 
     public int getDbID() {
         return dbID;
+    }
+
+    public void delete() {
+        Database.deletePassengerFromDatabase(this.dbID);
     }
 }
