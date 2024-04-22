@@ -4,8 +4,11 @@ CREATE TABLE `flights` (
     `origin_airport` VARCHAR(5) NOT NULL DEFAULT '' COLLATE 'utf8mb4_general_ci',
     `destination_airport` VARCHAR(5) NOT NULL DEFAULT '' COLLATE 'utf8mb4_general_ci',
     `departure_time` DATETIME NOT NULL,
+    `estimated_arrival_time` DATETIME NOT NULL,
     `available_seats` SMALLINT(6) UNSIGNED NOT NULL DEFAULT '0',
-    PRIMARY KEY (`id`) USING BTREE
+    PRIMARY KEY (`id`) USING BTREE,
+    INDEX `idx_route` (`origin_airport`, `destination_airport`) USING BTREE,
+    INDEX `idx_flight_number` (`flight_number`) USING BTREE
 ) COLLATE='utf8mb4_general_ci' ENGINE=InnoDB;
 
 

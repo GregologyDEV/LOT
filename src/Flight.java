@@ -4,6 +4,9 @@ import java.sql.Timestamp;
 import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Flight {
     private String flightNumber;
@@ -14,6 +17,7 @@ public class Flight {
     private int availableSeats;
     private int dbID;
     private List<Passenger> passengers = new ArrayList<>();
+    private List<Integer> availableSeatsNumbers;
 
     /**
      *
@@ -37,6 +41,7 @@ public class Flight {
         this.departureTime = depTime;
         this.estimatedArrivalTime = arrTime;
         this.availableSeats = maxNoOfSeats;
+        this.availableSeatsNumbers = IntStream.range(1, maxNoOfSeats).boxed().collect(Collectors.toList());
 
         this.dbID = Database.addFlightToDatabase(this);
 
@@ -53,7 +58,7 @@ public class Flight {
         this.availableSeats = maxNoOfSeats;
     }
 
-    private boolean isFlightNumberCorrect(String flightNumber) {
+    static boolean isFlightNumberCorrect(String flightNumber) {
         String requiredFormatRegex = "[a-zA-Z]{2}[0-9]{1,4}";
 
         return flightNumber.matches(requiredFormatRegex);
@@ -80,18 +85,43 @@ public class Flight {
         this.flightNumber = flightNumber;
     }
 
-    public long getFlightDuration() {
-        //TODO
-        return 0;
+
+    /**
+     * Calculates estimated flight time based on previously assigned departure and est. arrival time
+     * @return long array: <p> [0] - hours <p> [1] - minutes
+     */
+    public long[] getFlightDuration() {
+        long miliseconds = estimatedArrivalTime.getTime() - departureTime.getTime();
+        long hours = TimeUnit.MILLISECONDS.toHours(miliseconds);
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(miliseconds) % 60;
+        return new long[]{hours, minutes};
     }
 
-    public void assignPassenger(Passenger passenger) {
-        if (this.availableSeats == 0) System.out.println("No seats available, can't assign new passenger");
+    /**
+     *
+     * @param passenger Passenger object
+     * @param seatNo Seat number
+     * @return booking id if successfully assigned <p> -1 if can not assign
+     */
+    public int assignPassenger(Passenger passenger, int seatNo) {
+        if (this.availableSeats == 0) {
+            System.out.println("No seats available, can't assign new passenger");
+            return -1;
+        }
+        if (!this.availableSeatsNumbers.contains(seatNo)) {
+            System.out.println("Selected seat is unavailable");
+            return -1;
+        }
         if (!this.passengers.contains(passenger)) {
             this.passengers.add(passenger);
             this.availableSeats--;
+            this.availableSeatsNumbers.remove(seatNo);
             System.out.println("Passenger " + passenger.getName() + " " + passenger.getSurname() + " assigned to flight " + this.flightNumber);
-        } else System.out.println("Passenger " + passenger.getName() + " " + passenger.getSurname() + " already assigned to flight");
+            return Database.addPassengerToFlight(passenger, this, seatNo);
+        } else {
+            System.out.println("Passenger " + passenger.getName() + " " + passenger.getSurname() + " already assigned to flight");
+            return -1;
+        }
     }
 
     public String getOriginAirport() {
@@ -116,5 +146,9 @@ public class Flight {
 
     public List<Passenger> getPassengers() {
         return passengers;
+    }
+
+    public void delete() {
+        Database.deleteFlightFromDatabase(this.flightNumber);
     }
 }

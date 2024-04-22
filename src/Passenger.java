@@ -13,7 +13,14 @@ public class Passenger {
 
         this.dbID = Database.addPassengerToDatabase(this);
 
-        System.out.println(this.dbID);
+        //System.out.println(this.dbID);
+    }
+
+    public Passenger(int id, String name, String surname, String phoneNumber) {
+        this.dbID = id;
+        this.name = name;
+        this.surname = surname;
+        this.phoneNumber = phoneNumber;
     }
 
     private boolean isPhoneNumberCorrect(String phoneNumber) {
@@ -46,5 +53,9 @@ public class Passenger {
         if (isPhoneNumberCorrect(phoneNumber)) {
             this.phoneNumber = phoneNumber;
         } else throw new IllegalArgumentException("Incorrect phone number");
+    }
+
+    public int getDbID() {
+        return dbID;
     }
 }

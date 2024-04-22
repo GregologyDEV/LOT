@@ -1,15 +1,17 @@
+import javax.xml.crypto.Data;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
         Database db = new Database();
 
-        //Flight fl = new Flight("LO948", "WAW", "WMM", Timestamp.valueOf("2022-04-14 12:30:45"), Timestamp.valueOf("2027-04-14 12:30:45"), 100);
+        Flight fl = new Flight("LO777", "WAW", "WMM", Timestamp.valueOf("2022-04-14 12:30:45"), Timestamp.valueOf("2027-04-14 12:30:45"), 100);
 
-        Passenger pa = new Passenger("Anna", "Stankiewicz", "+48694466866");
+        Passenger pa = new Passenger("Anna", "Muczynska", "+48694466866");
 
-        //fl.assignPassenger(pa);
+        //System.out.println(fl.assignPassenger(pa, 3));
 
         //System.out.println(Database.doesFlightExists("LO948"));
 
@@ -19,7 +21,12 @@ public class Main {
         //System.out.println(pa.isPhoneNumberCorrect("+48694466866"));
 
 
-        Database.getAllFlights();
+        List<Flight> flights = Database.getAllFlights();
+
+        Flight test = Database.getFlight("LO777");
+        //test.delete();
+
+        //System.out.println(test.getFlightDuration()[0] + " " + test.getFlightDuration()[1]);
 
         //TODO Flights class
     }
