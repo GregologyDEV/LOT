@@ -411,6 +411,39 @@ public class Database {
         return list;
     }
 
+
+    public static List<Flight> getFlightsWithAvailableSeats(int minimumSeats) {
+        List<Flight> list = new ArrayList<>();
+        String sql = "SELECT * FROM flights WHERE available_seats >= ? ORDER BY available_seats DESC";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, minimumSeats);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                int flightID = resultSet.getInt("id");
+                Map<Passenger, Integer> passengersAndSeats = getPassengersOnFlight(flightID);
+                Flight flight = new Flight(
+                        flightID,
+                        resultSet.getString("flight_number"),
+                        resultSet.getString("origin_airport"),
+                        resultSet.getString("destination_airport"),
+                        resultSet.getTimestamp("departure_time"),
+                        resultSet.getTimestamp("estimated_arrival_time"),
+                        resultSet.getInt("available_seats"),
+                        passengersAndSeats
+                );
+
+                list.add(flight);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
     /**
      *
      * @return List of all passengers stored in database

@@ -17,9 +17,9 @@ public class Flight {
     private Timestamp departureTime;    // ISO 8601 YYYY-MM-DDThh:mm:ss
     private Timestamp estimatedArrivalTime;
     private int availableSeats;
+    private int maxNumberOfSeats;
     private int dbID;
     private Map<Passenger, Integer> passengersAndSeats = new HashMap<>();
-    private List<Integer> availableSeatsNumbers;
 
     /**
      *
@@ -43,7 +43,7 @@ public class Flight {
         this.departureTime = depTime;
         this.estimatedArrivalTime = arrTime;
         this.availableSeats = maxNoOfSeats;
-        this.availableSeatsNumbers = IntStream.range(1, maxNoOfSeats).boxed().collect(Collectors.toList());
+        this.maxNumberOfSeats = maxNoOfSeats;
 
         this.dbID = Database.addFlightToDatabase(this);
 
@@ -118,7 +118,7 @@ public class Flight {
             System.out.println("No seats available, can't assign new passenger");
             return -1;
         }
-        if (seatNo < 0 || seatNo > this.availableSeats) {
+        if (seatNo < 0 || seatNo > this.maxNumberOfSeats) {
             System.out.println("Incorrect seat number");
             return -1;
         }
@@ -129,7 +129,6 @@ public class Flight {
         if (!this.passengersAndSeats.containsKey(passenger)) {
             this.passengersAndSeats.put(passenger, seatNo);
             this.availableSeats--;
-            this.availableSeatsNumbers.remove(seatNo); // No longer needed?
             System.out.println("Passenger " + passenger.getFullName() + " assigned to flight " + this.flightNumber);
             Database.updateFlight(this);
             return Database.addPassengerToFlight(passenger, this, seatNo);
