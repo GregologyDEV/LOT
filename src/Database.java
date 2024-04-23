@@ -19,18 +19,11 @@ public class Database {
         }
     }
 
-    public ResultSet executeQuery(String sqlQuery, String ... params) {
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery)) {
-            for (int i = 0; i < params.length; i++) {
-                preparedStatement.setString(i+1, params[i]);
-            }
-            return preparedStatement.executeQuery();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
+    /**
+     *
+     * @param flightNumber IATA flight number
+     * @return <code>true</code> if flight of given number exists in database <p> <code>false</code> if not
+     */
     public static boolean doesFlightExists(String flightNumber) {
         String sql = "SELECT COUNT(*) FROM flights WHERE flight_number = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -47,6 +40,11 @@ public class Database {
         return false;
     }
 
+    /**
+     *
+     * @param flightNumber IATA flight number
+     * @return Flight object if such exists in database <p> null otherwise
+     */
     public static Flight getFlight(String flightNumber) {
         if (!Flight.isFlightNumberCorrect(flightNumber.toUpperCase())) throw new IllegalArgumentException("Flight number is incorrect");
         String sql = "SELECT * FROM flights WHERE flight_number = ?";
@@ -74,11 +72,16 @@ public class Database {
         return null;
     }
 
-    public static Map<Passenger, Integer> getPassengersOnFlight(int flightID) {
+    /**
+     *
+     * @param id Flight database id
+     * @return Map: key -> Passenger object <p> value -> booked seat number
+     */
+    public static Map<Passenger, Integer> getPassengersOnFlight(int id) {
         Map<Passenger, Integer> result = new HashMap<>();
         String sql = "SELECT p.*, b.seat_number FROM passengers p JOIN bookings b on p.id = b.passenger_id WHERE b.flight_id = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, flightID);
+            statement.setInt(1, id);
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     Passenger p = new Passenger(
@@ -98,6 +101,47 @@ public class Database {
         return result;
     }
 
+    /**
+     *
+     * @param passenger Passenger object
+     * @return Map: key -> Flight object <p> value -> booked seat number
+     */
+    public static Map<Flight, Integer> getAllPassengerFlights(Passenger passenger) {
+        Map<Flight, Integer> flights = new HashMap<>();
+        String sql = "SELECT f.*, b.seat_number FROM flights f JOIN bookings b on f.id = b.flight_id WHERE b.passenger_id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, passenger.getDbID());
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    int id = resultSet.getInt("id");
+                    Map<Passenger, Integer> passengersAndSeats = getPassengersOnFlight(id);
+                    Flight f = new Flight(
+                            id,
+                            resultSet.getString("flight_number"),
+                            resultSet.getString("origin_airport"),
+                            resultSet.getString("destination_airport"),
+                            resultSet.getTimestamp("departure_time"),
+                            resultSet.getTimestamp("estimated_arrival_time"),
+                            resultSet.getInt("available_seats"),
+                            passengersAndSeats
+                    );
+
+                    flights.put(f, resultSet.getInt("seat_number"));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return flights;
+    }
+
+    /**
+     *
+     * @param name Passenger name
+     * @param surname Passenger surname
+     * @return <code>true</code> if passenger exists in database <p> <code>false</code> otherwise
+     */
     public static boolean doesPassengerExists(String name, String surname) {
         String sql = "SELECT COUNT(*) FROM passengers WHERE name = ? AND surname = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -114,6 +158,12 @@ public class Database {
         return false;
     }
 
+    /**
+     * 
+     * @param name Searched passenger name
+     * @param surname Searched passenger surname
+     * @return Passenger object if found <p> <code>null</code> if passenger not found
+     */
     public static Passenger getPassenger(String name, String surname) {
         String sql = "SELECT * FROM passengers WHERE name = ? AND surname = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -135,6 +185,10 @@ public class Database {
         return null;
     }
 
+    /**
+     * Deletes passenger from database
+     * @param id Passenger database id
+     */
     public static void deletePassengerFromDatabase(int id) {
         String sql = "DELETE FROM passengers WHERE id = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -153,9 +207,9 @@ public class Database {
     }
 
     /**
-     *
+     * Add flight to database
      * @param flight Flight object
-     * @return Flight database id
+     * @return Added flight database id
      */
     public static int addFlightToDatabase(Flight flight) {
         String sqlQuery = "INSERT INTO flights (flight_number, origin_airport, destination_airport, departure_time, estimated_arrival_time, available_seats) VALUES (?, ?, ?, ?, ?, ?)";
@@ -179,6 +233,10 @@ public class Database {
         }
     }
 
+    /**
+     * Deletes flight from database
+     * @param flightNumber IATA flight number
+     */
     public static void deleteFlightFromDatabase(String flightNumber) {
         String sql = "DELETE FROM flights WHERE flight_number = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -277,6 +335,19 @@ public class Database {
             e.printStackTrace();
         }
         return flights;
+    }
+
+    public static List<Flight> getAllFlightsOnRoute(String r, boolean includeOppositeDirection) {
+        String route = r.trim().toUpperCase();
+        String[] routeAirports = route.split("-");
+        String reverseRoute = routeAirports[1] + "-" + routeAirports[0];
+        List<Flight> list = getAllFlights();
+        if (includeOppositeDirection) {
+            list.removeIf(fl -> !fl.getRoute().equals(route.trim().toUpperCase()) && !fl.getRoute().equals(reverseRoute));
+        } else {
+            list.removeIf(fl -> !fl.getRoute().equals(route.trim().toUpperCase()));
+        }
+        return list;
     }
 
     public static List<Passenger> getAllPassengers() {

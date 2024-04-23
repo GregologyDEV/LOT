@@ -57,28 +57,37 @@ public class Main {
 
         //System.out.println(pa.isPhoneNumberCorrect("+48694466866"));
 
-
+/*
         List<Flight> flights = Database.getAllFlights();
         List<Passenger> passengers = Database.getAllPassengers();
-/*
+        List<Flight> flightsWAW_WMM = Database.getAllFlightsOnRoute("WAW-WMM", false);
+
+        for (Flight f : flightsWAW_WMM) {
+            System.out.println(f.getFlightNumber());
+        }
+
+
         for (Passenger p : passengers) {
             System.out.println(p.getFullName());
         }
-*/
+
         Flight test = Database.getFlight("LO123");
-        Passenger passengerTest = Database.getPassenger("James", "Smith");
-        test.removePassenger(passengerTest);
+*/
+        Passenger passengerTest = Database.getPassenger("Benjamin", "Moore");
+        Map<Flight, Integer> flights = Database.getAllPassengerFlights(passengerTest);
 
-        test = Database.getFlight("LO123");
 
-        for (Map.Entry<Passenger, Integer> entry : test.getPassengersAndSeats().entrySet()) {
-            System.out.println(entry.getKey().getFullName() + ", seat: " + entry.getValue());
+        //test = Database.getFlight("LO123");
+
+        for (Map.Entry<Flight, Integer> entry : flights.entrySet()) {
+            System.out.println(entry.getKey().getFlightNumber() + ", seat: " + entry.getValue());
         }
+
         //Database.getPassengersOnFlight(test.getDbID());
         //test.setDestinationAirport("LAX");
 
-        //Passenger p1 = Database.getPassenger("Anna", "Stankiewicz");
-        //p1.setPhoneNumber("+48881456545");
+        //Passenger p1 = Database.getPassenger("Anna", "Janowska");
+        //p1.setPhoneNumber("+48888777999");
 
         //System.out.println(test.getFlightDuration()[0] + " " + test.getFlightDuration()[1]);
     }

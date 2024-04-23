@@ -26,9 +26,9 @@ public class Flight {
      * @param flightNo IATA Flight number (2-letter airline code and 1 to 4 digits)
      * @param originAirp IATA airport of origin code
      * @param destinationAirp IATA airport of destination code
-     * @param depTime
-     * @param arrTime
-     * @param maxNoOfSeats
+     * @param depTime Timestamp in format YYYY-MM-DD hh:mm:ss
+     * @param arrTime Timestamp in format YYYY-MM-DD hh:mm:ss
+     * @param maxNoOfSeats Maximum number of seats
      * @throws IllegalArgumentException
      */
     public Flight(String flightNo, String originAirp, String destinationAirp, Timestamp depTime, Timestamp arrTime, int maxNoOfSeats) throws IllegalArgumentException {
@@ -50,6 +50,17 @@ public class Flight {
         System.out.println("Flight " + this.flightNumber + " added to database");
     }
 
+    /**
+     * Only used to creating Flight object pulled from database
+     * @param id
+     * @param flightNo
+     * @param originAirp
+     * @param destinationAirp
+     * @param depTime
+     * @param arrTime
+     * @param maxNoOfSeats
+     * @param passengersAndSeats
+     */
     public Flight(int id, String flightNo, String originAirp, String destinationAirp, Timestamp depTime, Timestamp arrTime, int maxNoOfSeats, Map<Passenger, Integer> passengersAndSeats) {
         this.dbID = id;
         this.originAirport = originAirp.trim().toUpperCase();
@@ -61,6 +72,11 @@ public class Flight {
         this.passengersAndSeats = passengersAndSeats;
     }
 
+    /**
+     * Returns if given string matches IATA flight number (2-letter airline code and 1 to 4 digits)
+     * @param flightNumber
+     * @return <code>true</code> if string is in IATA format <p> <code>false</code> otherwise
+     */
     static boolean isFlightNumberCorrect(String flightNumber) {
         String requiredFormatRegex = "[a-zA-Z]{2}[0-9]{1,4}";
 
@@ -82,7 +98,7 @@ public class Flight {
 
     /**
      * Calculates estimated flight time based on previously assigned departure and est. arrival time
-     * @return long array: <p> [0] - hours <p> [1] - minutes
+     * @return <code>long</code> array: <p> [0] - hours <p> [1] - minutes
      */
     public long[] getFlightDuration() {
         long miliseconds = estimatedArrivalTime.getTime() - departureTime.getTime();
@@ -92,7 +108,7 @@ public class Flight {
     }
 
     /**
-     *
+     * Assigns given passenger to flight
      * @param passenger Passenger object
      * @param seatNo Seat number
      * @return booking id if successfully assigned <p> -1 if can not assign
@@ -123,6 +139,10 @@ public class Flight {
         }
     }
 
+    /**
+     * Removes given passenger from flight
+     * @param passenger Passenger object
+     */
     public void removePassenger(Passenger passenger) {
         // Due to fact that Passenger passenger may be the same, but different object it's necessary to find passenger in map using for each loop
         for (Map.Entry<Passenger, Integer> entry : this.passengersAndSeats.entrySet()) {
@@ -145,6 +165,14 @@ public class Flight {
 
     public String getDestinationAirport() {
         return destinationAirport;
+    }
+
+    /**
+     *
+     * @return Flight route in format: ORIGIN_AIRPORT-DESTINATION_AIRPORT (e.g WAW-LAX)
+     */
+    public String getRoute() {
+        return this.originAirport + "-" + this.destinationAirport;
     }
 
     public Timestamp getDepartureTime() {
