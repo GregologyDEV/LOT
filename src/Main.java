@@ -2,6 +2,7 @@ import javax.xml.crypto.Data;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 public class Main {
     public static void main(String[] args) {
@@ -59,13 +60,21 @@ public class Main {
 
         List<Flight> flights = Database.getAllFlights();
         List<Passenger> passengers = Database.getAllPassengers();
-
+/*
         for (Passenger p : passengers) {
             System.out.println(p.getFullName());
         }
-
+*/
         Flight test = Database.getFlight("LO123");
-        Database.getPassengersOnFlight(test.getDbID());
+        Passenger passengerTest = Database.getPassenger("James", "Smith");
+        test.removePassenger(passengerTest);
+
+        test = Database.getFlight("LO123");
+
+        for (Map.Entry<Passenger, Integer> entry : test.getPassengersAndSeats().entrySet()) {
+            System.out.println(entry.getKey().getFullName() + ", seat: " + entry.getValue());
+        }
+        //Database.getPassengersOnFlight(test.getDbID());
         //test.setDestinationAirport("LAX");
 
         //Passenger p1 = Database.getPassenger("Anna", "Stankiewicz");

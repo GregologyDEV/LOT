@@ -47,7 +47,7 @@ public class Database {
         return false;
     }
 
-    public static Flight getFlight(String flightNumber) { // TODO get Map<Passneger, Seat>
+    public static Flight getFlight(String flightNumber) {
         if (!Flight.isFlightNumberCorrect(flightNumber.toUpperCase())) throw new IllegalArgumentException("Flight number is incorrect");
         String sql = "SELECT * FROM flights WHERE flight_number = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -61,7 +61,9 @@ public class Database {
                     Timestamp estimatedArrivalTime = resultSet.getTimestamp("estimated_arrival_time");
                     int availableSeats = resultSet.getInt("available_seats");
 
-                    return new Flight(id, flightNumber, originAirport, destinationAirport, departureTime, estimatedArrivalTime, availableSeats);
+                    Map<Passenger, Integer> passengersAndSeats = getPassengersOnFlight(id);
+
+                    return new Flight(id, flightNumber, originAirport, destinationAirport, departureTime, estimatedArrivalTime, availableSeats, passengersAndSeats);
                 } else {
                     System.out.println("Flight not found");
                 }
@@ -251,20 +253,23 @@ public class Database {
         }
     }
 
-    public static List<Flight> getAllFlights() { //TODO Change to use getFlight() ?
+    public static List<Flight> getAllFlights() {
         List<Flight> flights = new ArrayList<>();
         String sql = "SELECT * FROM flights";
         try (PreparedStatement statement = connection.prepareStatement(sql);
             ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
+                int flightID = resultSet.getInt("id");
+                Map<Passenger, Integer> passengersAndSeats = getPassengersOnFlight(flightID);
                 Flight flight = new Flight(
-                        resultSet.getInt("id"),
+                        flightID,
                         resultSet.getString("flight_number"),
                         resultSet.getString("origin_airport"),
                         resultSet.getString("destination_airport"),
                         resultSet.getTimestamp("departure_time"),
                         resultSet.getTimestamp("estimated_arrival_time"),
-                        resultSet.getInt("available_seats")
+                        resultSet.getInt("available_seats"),
+                        passengersAndSeats
                 );
                 flights.add(flight);
             }
@@ -315,7 +320,16 @@ public class Database {
     }
 
     public static void removePassengerFromFlight(Passenger passenger, Flight flight) {
+        String sqlQuery = "DELETE FROM bookings WHERE passenger_id = ? AND flight_id = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery)) {
+            preparedStatement.setInt(1, passenger.getDbID());
+            preparedStatement.setInt(2, flight.getDbID());
 
+            preparedStatement.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public void close() {

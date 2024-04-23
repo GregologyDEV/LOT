@@ -50,7 +50,7 @@ public class Flight {
         System.out.println("Flight " + this.flightNumber + " added to database");
     }
 
-    public Flight(int id, String flightNo, String originAirp, String destinationAirp, Timestamp depTime, Timestamp arrTime, int maxNoOfSeats) {
+    public Flight(int id, String flightNo, String originAirp, String destinationAirp, Timestamp depTime, Timestamp arrTime, int maxNoOfSeats, Map<Passenger, Integer> passengersAndSeats) {
         this.dbID = id;
         this.originAirport = originAirp.trim().toUpperCase();
         this.destinationAirport = destinationAirp.trim().toUpperCase();
@@ -58,6 +58,7 @@ public class Flight {
         this.departureTime = depTime;
         this.estimatedArrivalTime = arrTime;
         this.availableSeats = maxNoOfSeats;
+        this.passengersAndSeats = passengersAndSeats;
     }
 
     static boolean isFlightNumberCorrect(String flightNumber) {
@@ -111,7 +112,7 @@ public class Flight {
         }
         if (!this.passengersAndSeats.containsKey(passenger)) {
             this.passengersAndSeats.put(passenger, seatNo);
-            this.availableSeats--; // TODO Test availableSeats
+            this.availableSeats--;
             this.availableSeatsNumbers.remove(seatNo); // No longer needed?
             System.out.println("Passenger " + passenger.getFullName() + " assigned to flight " + this.flightNumber);
             Database.updateFlight(this);
@@ -123,7 +124,18 @@ public class Flight {
     }
 
     public void removePassenger(Passenger passenger) {
-        if (!this.passengersAndSeats.containsKey(passenger)) System.out.println("Passenger " + passenger.getFullName() + " is not assigned to flight");
+        // Due to fact that Passenger passenger may be the same, but different object it's necessary to find passenger in map using for each loop
+        for (Map.Entry<Passenger, Integer> entry : this.passengersAndSeats.entrySet()) {
+            if (entry.getKey().getFullName().equals(passenger.getFullName())) {
+                this.passengersAndSeats.remove(entry.getKey());
+                this.availableSeats++;
+                Database.removePassengerFromFlight(passenger, this);
+                return;
+            }
+            //System.out.println(entry.getKey().getFullName() + ", seat: " + entry.getValue());
+        }
+
+        System.out.println("Passenger " + passenger.getFullName() + " is not assigned to flight");
 
     }
 
@@ -141,6 +153,10 @@ public class Flight {
 
     public Timestamp getEstimatedArrivalTime() {
         return estimatedArrivalTime;
+    }
+
+    public Map<Passenger, Integer> getPassengersAndSeats() {
+        return passengersAndSeats;
     }
 
     public int getDbID() {
