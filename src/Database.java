@@ -1,6 +1,8 @@
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Database {
     private static final String URL = "jdbc:mysql://localhost:3306/lot";
@@ -45,7 +47,7 @@ public class Database {
         return false;
     }
 
-    public static Flight getFlight(String flightNumber) {
+    public static Flight getFlight(String flightNumber) { // TODO get Map<Passneger, Seat>
         if (!Flight.isFlightNumberCorrect(flightNumber.toUpperCase())) throw new IllegalArgumentException("Flight number is incorrect");
         String sql = "SELECT * FROM flights WHERE flight_number = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -68,6 +70,30 @@ public class Database {
             throw new RuntimeException(e);
         }
         return null;
+    }
+
+    public static Map<Passenger, Integer> getPassengersOnFlight(int flightID) {
+        Map<Passenger, Integer> result = new HashMap<>();
+        String sql = "SELECT p.*, b.seat_number FROM passengers p JOIN bookings b on p.id = b.passenger_id WHERE b.flight_id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, flightID);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    Passenger p = new Passenger(
+                            resultSet.getInt("id"),
+                            resultSet.getString("name"),
+                            resultSet.getString("surname"),
+                            resultSet.getString("phone_number")
+                    );
+
+                    result.put(p, resultSet.getInt("seat_number"));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return result;
     }
 
     public static boolean doesPassengerExists(String name, String surname) {
@@ -229,7 +255,7 @@ public class Database {
         List<Flight> flights = new ArrayList<>();
         String sql = "SELECT * FROM flights";
         try (PreparedStatement statement = connection.prepareStatement(sql);
-             ResultSet resultSet = statement.executeQuery()) {
+            ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
                 Flight flight = new Flight(
                         resultSet.getInt("id"),

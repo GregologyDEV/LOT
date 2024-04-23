@@ -114,6 +114,7 @@ public class Flight {
             this.availableSeats--; // TODO Test availableSeats
             this.availableSeatsNumbers.remove(seatNo); // No longer needed?
             System.out.println("Passenger " + passenger.getFullName() + " assigned to flight " + this.flightNumber);
+            Database.updateFlight(this);
             return Database.addPassengerToFlight(passenger, this, seatNo);
         } else {
             System.out.println("Passenger " + passenger.getFullName() + " already assigned to flight");
@@ -146,8 +147,12 @@ public class Flight {
         return dbID;
     }
 
-    public List<Passenger> getPassengers() {
-        return passengers;
+    public List<Passenger> getPassengersList() {
+        return new ArrayList<>(passengersAndSeats.keySet());
+    }
+
+    public List<Integer> getOccupiedSeatsList() {
+        return new ArrayList<>(passengersAndSeats.values());
     }
 
     public void delete() {

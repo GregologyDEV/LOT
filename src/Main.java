@@ -8,7 +8,7 @@ public class Main {
         Database db = new Database();
 
         //Flight fl = new Flight("LO777", "WAW", "WMM", Timestamp.valueOf("2022-04-14 12:30:45"), Timestamp.valueOf("2027-04-14 12:30:45"), 100);
-/*
+        /*
         Passenger p1 = new Passenger("James", "Smith", "+12025550101");
         Passenger p2 = new Passenger("Maria", "Garcia", "+13475550342");
         Passenger p3 = new Passenger("John", "Johnson", "+19253329988");
@@ -43,8 +43,10 @@ public class Main {
         f2.assignPassenger(p7, 44);
         f2.assignPassenger(p1, 55);
         f2.assignPassenger(p9, 33);
-    */
 
+        System.out.println(f1.getAvailableSeats());
+        System.out.println(f2.getAvailableSeats());
+*/
         //System.out.println(fl.assignPassenger(pa, 3));
 
         //System.out.println(Database.doesFlightExists("LO948"));
@@ -62,7 +64,8 @@ public class Main {
             System.out.println(p.getFullName());
         }
 
-        Flight test = Database.getFlight("LO777");
+        Flight test = Database.getFlight("LO123");
+        Database.getPassengersOnFlight(test.getDbID());
         //test.setDestinationAirport("LAX");
 
         //Passenger p1 = Database.getPassenger("Anna", "Stankiewicz");
