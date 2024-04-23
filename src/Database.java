@@ -254,6 +254,10 @@ public class Database {
         }
     }
 
+    /**
+     * Updates all flight info in database
+     * @param flight Flight object
+     */
     public static void updateFlight(Flight flight) {
         String sqlQuery = "UPDATE flights SET origin_airport = ?, destination_airport = ?, departure_time = ?, estimated_arrival_time = ?, available_seats = ? WHERE id = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery)) {
@@ -275,6 +279,10 @@ public class Database {
         }
     }
 
+    /**
+     * Updates all passenger info in database
+     * @param passenger Passenger object
+     */
     public static void updatePassenger(Passenger passenger) {
         String sqlQuery = "UPDATE passengers SET phone_number = ? WHERE id = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery)) {
@@ -292,6 +300,11 @@ public class Database {
         }
     }
 
+    /**
+     * Inserts passenger info in database
+     * @param passenger Passenger object
+     * @return Passenger database id
+     */
     public static int addPassengerToDatabase(Passenger passenger) {
         String sqlQuery = "INSERT INTO passengers (name, surname, phone_number) VALUES (?, ?, ?)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery)) {
@@ -311,6 +324,10 @@ public class Database {
         }
     }
 
+    /**
+     *
+     * @return List of all flights stored in database
+     */
     public static List<Flight> getAllFlights() {
         List<Flight> flights = new ArrayList<>();
         String sql = "SELECT * FROM flights";
@@ -337,6 +354,12 @@ public class Database {
         return flights;
     }
 
+    /**
+     *
+     * @param r Flight route in format: ORIGIN_AIRPORT-DESTINATION_AIRPORT (e.g WAW-LAX)
+     * @param includeOppositeDirection Should return also flights going in opposite direction, (e.g WAW-LAX and LAX-WAW)
+     * @return List of flights that matches route / routes
+     */
     public static List<Flight> getAllFlightsOnRoute(String r, boolean includeOppositeDirection) {
         String route = r.trim().toUpperCase();
         String[] routeAirports = route.split("-");
@@ -350,6 +373,48 @@ public class Database {
         return list;
     }
 
+
+    /**
+     *
+     * @param hours
+     * @return List of flights departing in next hours specified in parameters
+     */
+    public static List<Flight> getFlightsDepartingInNextHours(int hours) {
+        List<Flight> list = new ArrayList<>();
+        String sql = "SELECT * FROM flights WHERE departure_time BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL ? HOUR)";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, hours);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                int flightID = resultSet.getInt("id");
+                Map<Passenger, Integer> passengersAndSeats = getPassengersOnFlight(flightID);
+                Flight flight = new Flight(
+                        flightID,
+                        resultSet.getString("flight_number"),
+                        resultSet.getString("origin_airport"),
+                        resultSet.getString("destination_airport"),
+                        resultSet.getTimestamp("departure_time"),
+                        resultSet.getTimestamp("estimated_arrival_time"),
+                        resultSet.getInt("available_seats"),
+                        passengersAndSeats
+                );
+
+                list.add(flight);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    /**
+     *
+     * @return List of all passengers stored in database
+     */
     public static List<Passenger> getAllPassengers() {
         List<Passenger> passengers = new ArrayList<>();
         String sql = "SELECT * FROM passengers";
@@ -370,6 +435,13 @@ public class Database {
         return passengers;
     }
 
+    /**
+     *
+     * @param passenger Passenger object assigned to flight
+     * @param flight Flight object passenger is assigned to
+     * @param seatNo Booked seat number
+     * @return booking id from database
+     */
     public static int addPassengerToFlight(Passenger passenger, Flight flight, int seatNo) {
         //System.out.println(passenger.getDbID() + " " + flight.getDbID());
         String sqlQuery = "INSERT INTO bookings (flight_id, passenger_id, seat_number) VALUES (?, ?, ?)";
@@ -390,6 +462,11 @@ public class Database {
         }
     }
 
+    /**
+     *
+     * @param passenger Passenger object removed from flight
+     * @param flight Flight object passenger is removed from
+     */
     public static void removePassengerFromFlight(Passenger passenger, Flight flight) {
         String sqlQuery = "DELETE FROM bookings WHERE passenger_id = ? AND flight_id = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery)) {
@@ -403,6 +480,9 @@ public class Database {
         }
     }
 
+    /**
+     * Closing database connection
+     */
     public void close() {
         if (this.connection != null) {
             try {

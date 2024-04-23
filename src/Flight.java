@@ -51,7 +51,7 @@ public class Flight {
     }
 
     /**
-     * Only used to creating Flight object pulled from database
+     * Only used to create Flight object pulled from database
      * @param id
      * @param flightNo
      * @param originAirp
@@ -191,14 +191,25 @@ public class Flight {
         return dbID;
     }
 
+    /**
+     *
+     * @return List of Passengers assigned to this flight
+     */
     public List<Passenger> getPassengersList() {
         return new ArrayList<>(passengersAndSeats.keySet());
     }
 
+    /**
+     *
+      * @return List of occupied seats on flight
+     */
     public List<Integer> getOccupiedSeatsList() {
         return new ArrayList<>(passengersAndSeats.values());
     }
 
+    /**
+     * Deletes flight from database
+     */
     public void delete() {
         Database.deleteFlightFromDatabase(this.flightNumber);
     }
