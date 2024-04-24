@@ -1,24 +1,19 @@
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class Flight {
-    private String flightNumber;
+    private final String flightNumber;
     private String originAirport;
     private String destinationAirport;
-    private Timestamp departureTime;    // ISO 8601 YYYY-MM-DDThh:mm:ss
+    private Timestamp departureTime;    //YYYY-MM-DD hh:mm:ss
     private Timestamp estimatedArrivalTime;
     private int availableSeats;
     private int maxNumberOfSeats;
-    private int dbID;
+    private final int dbID;
     private Map<Passenger, Integer> passengersAndSeats = new HashMap<>();
 
     /**
@@ -52,14 +47,6 @@ public class Flight {
 
     /**
      * Only used to create Flight object pulled from database
-     * @param id
-     * @param flightNo
-     * @param originAirp
-     * @param destinationAirp
-     * @param depTime
-     * @param arrTime
-     * @param maxNoOfSeats
-     * @param passengersAndSeats
      */
     public Flight(int id, String flightNo, String originAirp, String destinationAirp, Timestamp depTime, Timestamp arrTime, int maxNoOfSeats, Map<Passenger, Integer> passengersAndSeats) {
         this.dbID = id;
@@ -73,7 +60,7 @@ public class Flight {
     }
 
     /**
-     * Returns if given string matches IATA flight number (2-letter airline code and 1 to 4 digits)
+     * Returns if given string is valid IATA flight number (2-letter airline code and 1 to 4 digits)
      * @param flightNumber
      * @return <code>true</code> if string is in IATA format <p> <code>false</code> otherwise
      */
@@ -96,9 +83,9 @@ public class Flight {
      * @return <code>long</code> array: <p> [0] - hours <p> [1] - minutes
      */
     public long[] getFlightDuration() {
-        long miliseconds = estimatedArrivalTime.getTime() - departureTime.getTime();
-        long hours = TimeUnit.MILLISECONDS.toHours(miliseconds);
-        long minutes = TimeUnit.MILLISECONDS.toMinutes(miliseconds) % 60;
+        long milliseconds = estimatedArrivalTime.getTime() - departureTime.getTime();
+        long hours = TimeUnit.MILLISECONDS.toHours(milliseconds);
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(milliseconds) % 60;
         return new long[]{hours, minutes};
     }
 
@@ -138,7 +125,7 @@ public class Flight {
      * @param passenger Passenger object
      */
     public void removePassenger(Passenger passenger) {
-        // Due to fact that Passenger passenger may be the same, but different object it's necessary to find passenger in map using for each loop
+        // Due to fact that Passenger may be the same, but different object it's necessary to find passenger in map using for each loop
         for (Map.Entry<Passenger, Integer> entry : this.passengersAndSeats.entrySet()) {
             if (entry.getKey().getFullName().equals(passenger.getFullName())) {
                 this.passengersAndSeats.remove(entry.getKey());
@@ -161,7 +148,7 @@ public class Flight {
 
     /**
      *
-     * @return Flight route in format: ORIGIN_AIRPORT-DESTINATION_AIRPORT (e.g WAW-LAX)
+     * @return Flight route in format: ORIGIN_AIRPORT-DESTINATION_AIRPORT (e.g. WAW-LAX)
      */
     public String getRoute() {
         return this.originAirport + "-" + this.destinationAirport;

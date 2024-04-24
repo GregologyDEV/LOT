@@ -91,20 +91,15 @@ public class Main {
         Passenger passengerTest = Database.getPassenger("Isabella", "Taylor");
         Map<Flight, Integer> passengerFlightsTest = Database.getAllPassengerFlights(passengerTest);
 
-        //test = Database.getFlight("LO123");
 
         for (Map.Entry<Flight, Integer> entry : passengerFlightsTest.entrySet()) {
             System.out.println(entry.getKey().getFlightNumber() + ", seat: " + entry.getValue());
         }
 
-        //Database.getPassengersOnFlight(test.getDbID());
-
         System.out.println("===== UPDATING FLIGHT DATA =====");
 
         test.setDestinationAirport("LAX");
 
-        //Passenger p1 = Database.getPassenger("Anna", "Janowska");
-        //p1.setPhoneNumber("+48888777999");
 
         System.out.println("===== OBTAINING FLIGHT DURATION =====");
 

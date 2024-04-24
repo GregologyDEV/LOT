@@ -1,8 +1,8 @@
 public class Passenger {
-    private String name;
-    private String surname;
+    private final String name;
+    private final String surname;
     private String phoneNumber;
-    private int dbID;
+    private final int dbID;
 
     /**
      *
@@ -25,10 +25,6 @@ public class Passenger {
 
     /**
      * Only used to create passenger object pulled from database
-     * @param id
-     * @param name
-     * @param surname
-     * @param phoneNumber
      */
     public Passenger(int id, String name, String surname, String phoneNumber) {
         this.dbID = id;
@@ -40,7 +36,7 @@ public class Passenger {
     /**
      *
      * @param phoneNumber
-     * @return
+     * @return <code>true</code> if phone number is in correct format <p> <code>false</code> otherwise
      */
     private boolean isPhoneNumberCorrect(String phoneNumber) {
         String phoneNumberRegex = "^[+]?[(]?[0-9]{3}[)]?[-\\s.]?[0-9]{3}[-\\s.]?[0-9]{4,6}$";

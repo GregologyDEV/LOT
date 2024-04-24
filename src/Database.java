@@ -356,8 +356,8 @@ public class Database {
 
     /**
      *
-     * @param r Flight route in format: ORIGIN_AIRPORT-DESTINATION_AIRPORT (e.g WAW-LAX)
-     * @param includeOppositeDirection Should return also flights going in opposite direction, (e.g WAW-LAX and LAX-WAW)
+     * @param r Flight route in format: ORIGIN_AIRPORT-DESTINATION_AIRPORT (e.g. WAW-LAX)
+     * @param includeOppositeDirection Should return also flights going in opposite direction, (e.g. WAW-LAX and LAX-WAW)
      * @return List of flights that matches route / routes
      */
     public static List<Flight> getAllFlightsOnRoute(String r, boolean includeOppositeDirection) {
@@ -517,9 +517,9 @@ public class Database {
      * Closing database connection
      */
     public void close() {
-        if (this.connection != null) {
+        if (connection != null) {
             try {
-                this.connection.close();
+                connection.close();
                 System.out.println("Database disconnected");
             } catch (SQLException e) {
                 e.printStackTrace();
