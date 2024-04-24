@@ -91,11 +91,6 @@ public class Flight {
         return availableSeats;
     }
 
-    public String getFlightPath() {
-        return this.originAirport + "-" + this.destinationAirport;
-    }
-
-
     /**
      * Calculates estimated flight time based on previously assigned departure and est. arrival time
      * @return <code>long</code> array: <p> [0] - hours <p> [1] - minutes
@@ -149,13 +144,11 @@ public class Flight {
                 this.passengersAndSeats.remove(entry.getKey());
                 this.availableSeats++;
                 Database.removePassengerFromFlight(passenger, this);
+                Database.updateFlight(this);
                 return;
             }
-            //System.out.println(entry.getKey().getFullName() + ", seat: " + entry.getValue());
         }
-
         System.out.println("Passenger " + passenger.getFullName() + " is not assigned to flight");
-
     }
 
     public String getOriginAirport() {
